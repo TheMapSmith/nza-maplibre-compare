@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Swipe between maps</title>
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <script src="https://unpkg.com/maplibre-gl@2.1.6/dist/maplibre-gl.js"></script>
+    <link
+      href="https://unpkg.com/maplibre-gl@2.1.6/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/pmtiles@2.7.0/dist/index.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <style>
+      body {
+        overflow: hidden;
+      }
+
+      body * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      .map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+    <script src="../dist/maplibre-gl-compare.js"></script>
+    <link rel="stylesheet" href="../dist/maplibre-gl-compare.css" type="text/css" />
+    
+    <div id="comparison-container">
+      <div id="map1" class="map"></div>
+      <div id="map2" class="map"></div>
+    </div>
+
+    <script>
+    let protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
+    let PMTILES_FELT_URL = "https://storage.googleapis.com/ee-layers/NorfolkNorfolkcityVA-ZD.pmtiles";
+    let PMTILES_FULL_URL = "https://storage.googleapis.com/ee-layers/NorfolkNorfolkcityVAZoningDistricts_FULL.pmtiles";
+
+    const p_felt = new pmtiles.PMTiles(PMTILES_FELT_URL);
+    const p_full = new pmtiles.PMTiles(PMTILES_FULL_URL);
+
+    protocol.add(p_felt);
+    protocol.add(p_full);
+
+    let map1, map2; // Declare maps at a higher scope
+
+    Promise.all([
+        p_felt.getHeader(),
+        p_full.getHeader()
+    ]).then(([header1, header2]) => {
+        map1 = new maplibregl.Map({
+            container: 'map1',
+            zoom: 11,
+            center: [-76.263413, 36.898402],
+            style: {
+                        version:8,
+                        sources: {
+                            "NorfolkNorfolkcityVAZD": {
+                                type: "vector",
+                                url: "pmtiles://" + PMTILES_FELT_URL
+                            },
+                            'carto-light': {
+                              'type': 'raster',
+                              'tileSize': 256,
+                              'tiles': [
+                                "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+                                "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+                                "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+                                "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
+                              ]
+                            }
+                        },
+                        layers: [
+                            {
+                                'id': 'carto-light-layer',
+                                'source': 'carto-light',          
+                                'type': 'raster',
+                                'minzoom': 0,
+                                'maxzoom': 22
+                            },{
+                                "id":"NorfolkNorfolkcityVAZD",
+                                "source": "NorfolkNorfolkcityVAZD",
+                                "source-layer":"NorfolkNorfolkcityVAZD",
+                                "type": "fill",
+                                'paint': {
+                                    'fill-color':
+                                        ['match', ['get', 'Type of Zoning District'],
+                                        'Mixed with Residential', '#635c8e',
+                                        'Nonresidential', '#e7dad0',
+                                        'Primarily Residential', '#b1a1c4',
+                                        'rgba(0,0,0,0)'],
+                                    'fill-opacity': 1
+                                }
+                            }
+                        ]
+                    }
+        });
+        map1.addControl(new maplibregl.NavigationControl());
+
+        map2 = new maplibregl.Map({
+            container: 'map2',
+            zoom: 11,
+            center: [-76.263413, 36.898402],
+            style: {
+                        version:8,
+                        sources: {
+                            "NorfolkNorfolkcityVAZoningDistricts": {
+                                type: "vector",
+                                url: "pmtiles://" + PMTILES_FULL_URL
+                            },
+                            'carto-light': {
+                              'type': 'raster',
+                              'tileSize': 256,
+                              'tiles': [
+                                "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+                                "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+                                "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
+                                "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"
+                              ]
+                            }
+                        },
+                        layers: [
+                            {
+                                'id': 'carto-light-layer',
+                                'source': 'carto-light',          
+                                'type': 'raster',
+                                'minzoom': 0,
+                                'maxzoom': 22
+                            },{
+                                "id":"NorfolkNorfolkcityVAZoningDistricts",
+                                "source": "NorfolkNorfolkcityVAZoningDistricts",
+                                "source-layer":"NorfolkNorfolkcityVAZoningDistricts",
+                                "type": "fill",
+                                'paint': {
+                                    'fill-color':
+                                        ['match', ['get', 'Type of Zoning District'],
+                                        'Mixed with Residential', '#635c8e',
+                                        'Nonresidential', '#e7dad0',
+                                        'Primarily Residential', '#b1a1c4',
+                                        'rgba(0,0,0,0)'],
+                                    'fill-opacity': 1
+                                }
+                            }
+                        ]
+                    }
+        });
+        map2.addControl(new maplibregl.NavigationControl());
+
+        // A selector or reference to HTML element
+        var container = "#comparison-container";
+
+        var map = new maplibregl.Compare(map1, map2, container, {
+          // Set this to enable comparing two maps by mouse movement:
+          // mousemove: true
+        });
+    });
+    </script>
+  </body>
+</html>
