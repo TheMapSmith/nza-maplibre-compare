@@ -48,13 +48,22 @@
         bottom: 0;
         width: 100%;
       }
+
+      p {
+        position: relative;
+        z-index: 999;
+      }
     </style>
-    <script src="../dist/maplibre-gl-compare.js"></script>
-    <link rel="stylesheet" href="../dist/maplibre-gl-compare.css" type="text/css" />
+    <script src="maplibre-gl-compare.js"></script>
+    <link rel="stylesheet" href="maplibre-gl-compare.css" type="text/css" />
     
     <div id="comparison-container">
-      <div id="map1" class="map"></div>
-      <div id="map2" class="map"></div>
+      <div id="map1" class="map">
+        <p>Felt Optimizations</p>
+      </div>
+      <div id="map2" class="map">
+          <p style="text-align: right;">No Optimizations - Full Tiles</p>
+      </div>
     </div>
 
     <script>
